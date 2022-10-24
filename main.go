@@ -6,15 +6,44 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
-func main() {
+type Credentials struct {
+	Key    string
+	Secret string
+}
+
+type Client struct {
+	ServerUrl  string
+	Credential Credentials
+	Client     *minio.Client
+}
+
+var s3Client *Client
+
+func NewClient() (*Client, error) {
 	s3Client, err := minio.New("minio.backend.localhost:8000", &minio.Options{
 		Creds:  credentials.NewStaticV4("minio", "miniostorage", ""),
 		Secure: false,
 		Region: "us-east-1",
 	})
+
 	if err != nil {
-		log.Fatalln(err)
+		fmt.Printf("s3 client init error: %v", err)
+
+		return nil, err
 	}
+
+	return &Client{
+		ServerUrl: objectStorage.Endpoint,
+		Credential: Credentials{
+			Key:    objectStorage.AccessKey,
+			Secret: objectStorage.SecretKey,
+		},
+		Client: client,
+	}, nil
+}
+
+func main() {
+	s3Client, err := NewClient()
 
 	path := "/home/s/Downloads/go.tar.gz"
 
